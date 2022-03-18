@@ -140,6 +140,7 @@ void GridWorld::__freeMemory()
 
     delete[] this->outputStateBuff;
     delete[] this->cellsArray;
+    delete[] this->currentCellsArray;
 
 
 }
