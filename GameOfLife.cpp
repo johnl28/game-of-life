@@ -33,8 +33,8 @@ void GridWorld::__generateOutputState()
     {
         for (int x = 0; x < this->width; ++x)
         {
-            cell tmpCell = this->GetCellXY(x, y);
-            char stateOutputChar = tmpCell.alive ? ALIVE_CHAR : DEAD_CHAR;
+            const cell *tmpCell = this->GetCellXY(x, y);
+            char stateOutputChar = tmpCell->alive ? ALIVE_CHAR : DEAD_CHAR;
             this->SetOutputNewCharXY(x, y, stateOutputChar);
         }
     }
@@ -62,30 +62,37 @@ void GridWorld::__computeCellArray()
     auto cellPtr = this->cellsArray;
     for (int i = 0; i < this->GetCellsCount(); ++i)
     {
-        cellPtr->alive = this->__isCellAliveInNextGen(*cellPtr);
+        cellPtr->alive = this->__isCellAliveInNextGen(&this->currentCellsArray[i]);
         ++cellPtr;
     }
+
+    memcpy(this->currentCellsArray, this->cellsArray, (this->height * this->width) * sizeof(cell));
 }
 
 
 void GridWorld::__initCellsArray()
 {
+    long long buffSize = this->height * this->width;
 
-    this->cellsArray = new cell[this->height * this->width];
+    this->cellsArray = new cell[buffSize];
+    this->currentCellsArray = new cell[buffSize];
+
     for (int y = 0; y < this->height; ++y)
     {
         for (int x = 0; x < this->width; ++x)
         {
-            bool isAlive = rand() % 2;
+            bool isAlive = !(rand() % 3);
             this->cellsArray[y * this->width + x] = cell{ x, y, isAlive };
         }
     }
+
+    memcpy(this->currentCellsArray, this->cellsArray, buffSize * sizeof(cell));
 }
 
-bool GridWorld::__isCellAliveInNextGen(cell currCell)
+bool GridWorld::__isCellAliveInNextGen(cell *currCell)
 {
-    int globalX = currCell.x - 1;
-    int globalY = currCell.y - 1;
+    int globalX = currCell->x - 1;
+    int globalY = currCell->y - 1;
     int neighboursAlive = 0;
 
     for (int y = 0; y < 3; ++y)
@@ -105,21 +112,27 @@ bool GridWorld::__isCellAliveInNextGen(cell currCell)
                 break;
             }
 
-            if (tmpX < 0 || (tmpX == currCell.x && tmpY == currCell.y))
+            if (tmpX < 0 || (tmpX == currCell->x && tmpY == currCell->y))
                 continue;
 
-            cell tmpCell = this->GetCellXY(tmpX, tmpY);
-            if (tmpCell.alive) {
+            const cell *tmpCell = this->GetCellXY(tmpX, tmpY);
+            if (tmpCell->alive) {
                 ++neighboursAlive;
             }
         }
     }
 
-    if (!currCell.alive && neighboursAlive == 3)
+    if (!currCell->alive && neighboursAlive == 3)
         return true;
 
-    if (currCell.alive && (neighboursAlive == 3 || neighboursAlive == 2))
+    else if (currCell->alive && (neighboursAlive == 3 || neighboursAlive == 2))
         return true;
+
+    else if (currCell->alive && (!neighboursAlive || neighboursAlive == 1))
+        return false;
+
+    else if (currCell->alive && neighboursAlive >= 4)
+        return false;
 
     return false;
 }

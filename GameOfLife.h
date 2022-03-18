@@ -33,9 +33,9 @@ public:
         return this->currentGeneration;
     }
 
-    cell GetCellXY(int x, int y)
+    cell* GetCellXY(int x, int y) const
     {
-        return this->cellsArray[y * this->width + x];
+        return &this->currentCellsArray[y * this->width + x];
     }
 
     int GetCellsCount()
@@ -67,12 +67,13 @@ private:
     void __initOutputState();
     void __generateOutputState();
 
-    bool __isCellAliveInNextGen(cell currCell);
+    bool __isCellAliveInNextGen(cell *currCell);
 
 private:
     int currentGeneration = 0;
     int height = 0;
     int width = 0;
+    cell* currentCellsArray = nullptr;
     cell* cellsArray = nullptr;
     char** outputStateBuff = nullptr;
 };
