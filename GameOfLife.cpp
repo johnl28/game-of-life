@@ -128,11 +128,6 @@ bool GridWorld::__isCellAliveInNextGen(cell *currCell)
     else if (currCell->alive && (neighboursAlive == 3 || neighboursAlive == 2))
         return true;
 
-    else if (currCell->alive && (!neighboursAlive || neighboursAlive == 1))
-        return false;
-
-    else if (currCell->alive && neighboursAlive >= 4)
-        return false;
 
     return false;
 }
